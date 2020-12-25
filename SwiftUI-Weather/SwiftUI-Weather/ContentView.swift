@@ -7,30 +7,21 @@
 
 import SwiftUI
 
+struct WeatherDayModel {
+    let dayOfWeek: String
+    let temperature: Int
+    let imageString: String
+}
+
 struct ContentView: View {
+    @State private var isNight = false
+    
     var body: some View {
         ZStack {
-            LinearGradient(gradient: Gradient(colors: [Color.blue, Color.init("LightBlue")]),
-                           startPoint: .topLeading,
-                           endPoint: .bottomTrailing)
-                .edgesIgnoringSafeArea(.all)
-            
+            BackgroundView(isNight: $isNight)
             VStack {
-                Text("Krasnoyarsk")
-                    .font(.system(size: 32, weight: .medium, design: .default))
-                    .foregroundColor(.white)
-                    .padding(.bottom)
-                VStack(spacing: 8) {
-                    Image(systemName: "cloud.sun.fill")
-                        .renderingMode(.original)
-                        .resizable()
-                        .aspectRatio(contentMode: .fit)
-                        .frame(width: 180, height: 180)
-                    Text("-15°")
-                        .font(.system(size: 70, weight: .medium, design: .rounded))
-                        .foregroundColor(.white)
-                }
-                .padding(.bottom, 40)
+                CityTextView(cityName: "Krasnoyarsk")
+                MainWeatherStatusView(imageName: isNight ? "moon.stars.fill" : "cloud.sun.fill", temperature: -15)
                 HStack(spacing: 10) {
                     WeatherDayView(dayOfWeek: "MON", imageName: "cloud.sun.fill", temperature: -5)
                     WeatherDayView(dayOfWeek: "TUE", imageName: "cloud.moon.rain.fill", temperature: -14)
@@ -40,7 +31,15 @@ struct ContentView: View {
                     
                 }
                 Spacer()
-                
+        
+                Button {
+                    isNight.toggle()
+                } label: {
+                    WeatherButton(title: "Change Day Time",
+                                  backgroundColor: Color.white,
+                                  textColor: Color.blue)
+                }
+                Spacer()
             }
             
         }
@@ -66,7 +65,6 @@ struct WeatherDayView: View {
             Image(systemName: imageName)
                 .renderingMode(.original)
                 .resizable()
-//                .foregroundColor(.white)
                 .aspectRatio(contentMode: .fit)
                 .frame(width: 40, height: 40)
             Text("\(temperature)°")
@@ -74,5 +72,45 @@ struct WeatherDayView: View {
                 .foregroundColor(.white)
             
         }
+    }
+}
+
+struct BackgroundView: View {
+    @Binding var isNight: Bool
+    var body: some View {
+        LinearGradient(gradient: Gradient(colors: [isNight ? Color.black :  Color.blue,
+                                                   isNight ? Color.gray : Color.init("LightBlue")]),
+                       startPoint: .topLeading,
+                       endPoint: .bottomTrailing)
+            .edgesIgnoringSafeArea(.all)
+    }
+}
+
+struct CityTextView: View {
+    var cityName: String
+    var body: some View {
+        Text(cityName)
+            .font(.system(size: 32, weight: .medium, design: .default))
+            .foregroundColor(.white)
+            .padding(.bottom)
+    }
+}
+
+
+struct MainWeatherStatusView: View {
+    var imageName: String
+    var temperature: Int
+    var body: some View {
+        VStack(spacing: 8) {
+            Image(systemName: imageName)
+                .renderingMode(.original)
+                .resizable()
+                .aspectRatio(contentMode: .fit)
+                .frame(width: 180, height: 180)
+            Text("\(temperature)°")
+                .font(.system(size: 70, weight: .medium, design: .rounded))
+                .foregroundColor(.white)
+        }
+        .padding(.bottom, 40)
     }
 }
