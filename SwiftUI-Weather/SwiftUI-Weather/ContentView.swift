@@ -15,13 +15,15 @@ struct WeatherDayModel {
 
 struct ContentView: View {
     @State private var isNight = false
+    @State private var currentWeather: CurrentWeather?
     
     var body: some View {
         ZStack {
             BackgroundView(isNight: $isNight)
             VStack {
-                CityTextView(cityName: "Krasnoyarsk")
-                MainWeatherStatusView(imageName: isNight ? "moon.stars.fill" : "cloud.sun.fill", temperature: -15)
+                CityTextView(cityName: currentWeather?.name ?? "Krasnoyarsk")
+                MainWeatherStatusView(imageName: isNight ? "moon.stars.fill" : "cloud.sun.fill",
+                                      temperature: Int(currentWeather?.main.temp ?? -15))
                 HStack(spacing: 10) {
                     WeatherDayView(dayOfWeek: "MON", imageName: "cloud.sun.fill", temperature: -5)
                     WeatherDayView(dayOfWeek: "TUE", imageName: "cloud.moon.rain.fill", temperature: -14)
@@ -40,17 +42,27 @@ struct ContentView: View {
                                   textColor: Color.blue)
                 }
                 Spacer()
+            } .onAppear {
+                NetworkManager().requestDecoded(WeatherTarget.currentWeather,
+                                                to: CurrentWeather.self) { (result) in
+                    switch result {
+                    case let .success(currentWeather):
+                        self.currentWeather = currentWeather
+                    case let .failure(error):
+                        debugPrint(error.localizedDescription)
+                    }
+                }
             }
             
         }
     }
 }
 
-struct ContentView_Previews: PreviewProvider {
-    static var previews: some View {
-        ContentView()
-    }
-}
+//struct ContentView_Previews: PreviewProvider {
+//    static var previews: some View {
+//        ContentView(currentWeather: CurrentWeather(weather: <#T##[Weather]#>, main: <#T##MainWeatherInfo#>, coord: <#T##Coordinate#>, name: <#T##String#>))
+//    }
+//}
 
 struct WeatherDayView: View {
     var dayOfWeek: String
